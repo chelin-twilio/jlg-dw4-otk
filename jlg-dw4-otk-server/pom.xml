@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.twilio.lgj</groupId>
+        <artifactId>jlg-dw4-otk</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jlg-dw4-otk-server</artifactId>
+    <name>${project.artifactId}</name>
+    <properties>
+        <openapi.library>dropwizard</openapi.library>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.twilio</groupId>
+            <artifactId>dropwizard4-chassi-dependencies</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.twilio</groupId>
+            <artifactId>dropwizard4-chassi-test-dependencies</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <testResources>
+            <testResource>
+                <filtering>true</filtering>
+                <directory>${project.basedir}/../conf</directory>
+                <includes>
+                    <include>service.yaml</include>
+                </includes>
+            </testResource>
+            <testResource>
+                <filtering>true</filtering>
+                <directory>${project.basedir}/src/test/resources</directory>
+            </testResource>
+        </testResources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+
+                <executions>
+                    <execution>
+                        <id>generate-service-routes</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <library>${openapi.library}</library>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi/openapi-spec.yaml</inputSpec>
+                            <apiPackage>com.twilio.lgj.server.api</apiPackage>
+                            <modelPackage>com.twilio.lgj.server.definitions</modelPackage>
+                            <collapsedSpec>openapi</collapsedSpec>
+                            <includeCollapsedSpecInArtifacts>true</includeCollapsedSpecInArtifacts>
+                            <configOptions>
+                                <isJakarta>true</isJakarta>
+                                <useOptional>false</useOptional>
+                                <virtualThreads>true</virtualThreads>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+
+                <configuration>
+                    <failIfNoTests>true</failIfNoTests>
+                    <includes>
+                        <include>**/*Suite.java</include>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <systemPropertyVariables>
+                        <jersey.config.test.container.port>0</jersey.config.test.container.port>
+                    </systemPropertyVariables>
+                    <environmentVariables>
+                        <HOST_SID>${testenv.HOST_SID}</HOST_SID>
+                        <TWILIO_REALM>${testenv.TWILIO_REALM}</TWILIO_REALM>
+                        <TWILIO_ENVIRONMENT>${testenv.TWILIO_ENVIRONMENT}</TWILIO_ENVIRONMENT>
+                        <APP_PORT>${testenv.APP_PORT}</APP_PORT>
+                        <ADMIN_PORT>${testenv.ADMIN_PORT}</ADMIN_PORT>
+                        <ROLLBAR_ENABLED>${testenv.ROLLBAR_ENABLED}</ROLLBAR_ENABLED>
+                        <API_AUTH_ENABLED>${testenv.API_AUTH_ENABLED}</API_AUTH_ENABLED>
+                        <HOST_AUTH_ENABLED>${testenv.HOST_AUTH_ENABLED}</HOST_AUTH_ENABLED>
+                        <SECRET_ROLLBAR_API_KEY>${testenv.SECRET_ROLLBAR_API_KEY}</SECRET_ROLLBAR_API_KEY>
+                        <SECRET_DATADOG_API_KEY>${testenv.SECRET_DATADOG_API_KEY}</SECRET_DATADOG_API_KEY>
+                    </environmentVariables>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <configuration>
+                    <createDependencyReducedPom>true</createDependencyReducedPom>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/LICENSE*</exclude>
+                                <exclude>META-INF/NOTICE*</exclude>
+                                <exclude>META-INF/notice*</exclude>
+                                <exclude>META-INF.versions.9.module-info</exclude>
+                                <exclude>META-INF.versions.11.module-info</exclude>
+                                <exclude>META-INF/maven/**</exclude>
+                                <exclude>META-INF/MANIFEST*</exclude>
+                                <exclude>META-INF/DEPENDENCIES*</exclude>
+                                <exclude>META-INF/io.netty.versions.properties</exclude>
+                                <exclude>module-info.class</exclude>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.twilio.lgj.server.application.Dw4OtkApplication</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/banner.txt</resource>
+                                    <file>banner.txt</file>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.basepom.maven</groupId>
+                <artifactId>duplicate-finder-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <sourceFileIncludes>
+                        <include>**/MyServiceResourceKey.java</include>
+                        <include>**/RateLimited.java</include>
+                    </sourceFileIncludes>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>

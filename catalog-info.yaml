@@ -1,0 +1,28 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: jlg-dw4-otk
+  description: "Repository created by Backstage"
+  annotations:
+    buildkite.com/project-slug: twilio/twilio-internal-jlg-dw4-otk
+    jira/project-key: ${jiraKey}
+    pagerduty.com/service-id: jlg-dw4-otk
+    twilio.com/email: lgj@twilio.com
+    twilio.com/ldap-group: team_java-guild
+    twilio.com/security-tier: green
+    twilio.com/service-tier: t5
+    twilio.com/slack-channel-name: eng-java-guild
+
+  links:
+    - url: "https://www.github.com/twilio-internal/jlg-dw4-otk"
+      title: "Application Repository"
+    - url: "https://www.github.com/twilio-internal/jlg-dw4-otk-deploy"
+      title: "Deployment Repository"
+    - url: "https://www.buildkite.com/twilio/twilio-internal-jlg-dw4-otk"
+      title: "Buildkite Pipeline"
+spec:
+  type: service
+  lifecycle: experimental
+  owner: group:team_otk-migration-assistance
+  system: system:default/system_platform-product-demo

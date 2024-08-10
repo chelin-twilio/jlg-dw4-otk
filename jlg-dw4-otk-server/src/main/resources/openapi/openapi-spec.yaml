@@ -1,0 +1,479 @@
+openapi: 3.0.2
+info:
+  title: Dw4Otk Service
+  description: This is a basic Dw4Otk service, showcasing many features of a standard Twilio Service
+  contact:
+    name: Your team name goes here
+    email: your-team-name@twilio.com
+    url: https://code.hq.twilio.com/your-team/jlg-dw4-otk
+  license:
+    name: Proprietary and protected
+    url: https://www.twilio.com/
+  version: 1.0.0
+servers:
+  - url: http://localhost:9876/v1
+security:
+  - TwilioApiAuth: []
+paths:
+  /Admin/ReadMessages:
+    get:
+      tags:
+        - admin
+      summary: Reads all the messages
+      operationId: readMessages
+      security:
+        - TwilioHostAuth:
+            - admin
+      x-concurrency-limit:
+        type: AIMD
+        timeoutMs: 500
+      x-rate-limit:
+        default: 1
+      parameters:
+        - name: PageSize
+          in: query
+          description: Number of results to return at once
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+        - name: PageToken
+          in: query
+          description: Opaque token describing which page of results to return
+          schema:
+            type: string
+            nullable: true
+      responses:
+        200:
+          description: Full message list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HelloMessageList"
+          headers:
+            etag:
+              schema:
+                type: string
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+  /Service/Messages:
+    get:
+      tags:
+        - helloMessage
+      summary: Retrieves messages
+      operationId: listMessages
+      x-concurrency-limit:
+        type: AIMD
+        timeoutMs: 1500
+      x-rate-limit:
+        default: 10
+        key: listMessages # example how to override the default key
+      parameters:
+        - name: From
+          in: query
+          description: A sender name
+          schema:
+            type: string
+            nullable: true
+        - name: To
+          in: query
+          description: A recipient name
+          schema:
+            type: string
+            nullable: true
+        - name: PageSize
+          in: query
+          description: Number of results to return at once
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+        - name: PageToken
+          in: query
+          description: Opaque token describing which page of results to return
+          schema:
+            type: string
+            nullable: true
+      responses:
+        200:
+          description: Returned message list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HelloMessageList"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+  /Service/Messages/{sid}:
+    get:
+      tags:
+        - helloMessage
+      summary: Fetch a message
+      operationId: getMessage
+      x-etag: true
+      x-concurrency-limit:
+        type: AIMD
+        timeoutMs: 500
+      x-rate-limit:
+        default: 10
+      parameters:
+        - name: sid
+          in: path
+          description: A unique message SID identifier
+          required: true
+          x-jvm-type: com.twilio.sids.SmsSid
+          schema:
+            type: string
+      responses:
+        200:
+          description: Message returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HelloMessageContainer"
+          headers:
+            etag:
+              schema:
+                type: string
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        404:
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+    post:
+      tags:
+        - helloMessage
+      summary: Create a new message
+      operationId: createMessage
+      x-concurrency-limit:
+        type: AIMD
+        timeoutMs: 500
+      x-rate-limit:
+        default: 1
+      parameters:
+        - name: sid
+          in: path
+          description: A unique message SID identifier
+          required: true
+          x-jvm-type: com.twilio.sids.SmsSid
+          schema:
+            type: string
+        - name: etag
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HelloMessage"
+      responses:
+        201:
+          description: Message created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HelloMessageContainer"
+          headers:
+            etag:
+              schema:
+                type: string
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        422:
+          description: Invalid HelloMessage
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+    put:
+      tags:
+        - helloMessage
+      summary: Update a message
+      operationId: updateMessage
+      x-etag: true
+      x-concurrency-limit:
+        type: AIMD
+        timeoutMs: 500
+      x-rate-limit:
+        default: 1
+      parameters:
+        - name: sid
+          in: path
+          description: A unique message SID identifier
+          required: true
+          x-jvm-type: com.twilio.sids.SmsSid
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              properties:
+                From:
+                  type: string
+                  description: Sender address
+                  nullable: true
+                To:
+                  type: string
+                  description: Recipient address
+                  nullable: true
+                Message:
+                  type: string
+                  description: Message body
+                  nullable: true
+      responses:
+        200:
+          description: Message updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HelloMessageContainer"
+        400:
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        404:
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+    delete:
+      tags:
+        - helloMessage
+      summary: Deletes a message
+      operationId: deleteMessage
+      x-concurrency-limit:
+        type: AIMD
+        timeoutMs: 500
+      x-rate-limit:
+        default: 20
+      parameters:
+        - name: sid
+          in: path
+          description: A unique message SID identifier
+          required: true
+          x-jvm-type: com.twilio.sids.SmsSid
+          schema:
+            type: string
+      responses:
+        204:
+          description: Message deleted
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+                x-jvm-type: com.twilio.rest.TwilioServiceErrorResponse
+components:
+  securitySchemes:
+    TwilioHostAuth:
+      type: http
+      scheme: twilio-host-auth
+    TwilioApiAuth:
+      type: http
+      scheme: twilio-api-auth
+
+  schemas:
+    HelloMessage:
+      type: object
+      required:
+        - from
+        - to
+        - message
+      properties:
+        from:
+          description: The name of the sender of the message
+          type: string
+        to:
+          description: The name of the recipient of the message
+          type: string
+        message:
+          description: The actual message
+          type: string
+          x-data-redaction: true
+    HelloMessageContainer:
+      type: object
+      required:
+        - sid
+        - account_sid
+        - hello_message
+        - date_created
+        - date_updated
+      properties:
+        sid:
+          description: The string ID reference for the message
+          type: string
+          x-jvm-type: com.twilio.sids.SmsSid
+        account_sid:
+          description: The account owning the message
+          type: string
+          x-jvm-type: com.twilio.sids.AccountSid
+        hello_message:
+          $ref: "#/components/schemas/HelloMessage"
+        date_created:
+          description: Timestamp of when the message was created
+          type: string
+          format: date-time
+        date_updated:
+          description: Timestamp of when the message was last updated
+          type: string
+          format: date-time
+    ListMeta:
+      type: object
+      required:
+        - key
+        - page_size
+        - url
+      properties:
+        key:
+          type: string
+        page_size:
+          type: integer
+          format: int32
+        url:
+          type: string
+          x-jvm-type: java.net.URI
+        previous_page_url:
+          type: string
+          x-jvm-type: java.net.URI
+        next_page_url:
+          type: string
+          x-jvm-type: java.net.URI
+    HelloMessageList:
+      type: object
+      required:
+        - hello_messages
+        - meta
+      properties:
+        hello_messages:
+          description: A list of messages
+          type: array
+          items:
+            $ref: "#/components/schemas/HelloMessageContainer"
+        meta:
+          $ref: "#/components/schemas/ListMeta"

@@ -1,0 +1,43 @@
+env:
+  TWILIO_MAVEN_PLUGIN_VERSION: main
+
+steps:
+  - label: ":toolbox: Build and deploy maven artifacts :maven: :junit: :sonarqube: :rocket:"
+    key: manual_maven_deploy
+    if: build.source == "ui" && build.env("RELEASE_VERSION") == null
+    plugins:
+      - ssh://git@code.hq.twilio.com/twilio/maven-buildkite-plugin.git#${TWILIO_MAVEN_PLUGIN_VERSION}:
+          maven_args: -T 1C -U clean deploy sonar:sonar -Pcoverage -DskipITs
+
+  - label: ":test_tube: Pull-request validation build :maven: :junit: :sonarqube:"
+    key: pr_validation
+    if: build.pull_request.id != null && build.source == "webhook"
+    plugins:
+      - ssh://git@code.hq.twilio.com/twilio/maven-buildkite-plugin.git#${TWILIO_MAVEN_PLUGIN_VERSION}:
+          maven_args: -T 1C -U clean verify sonar:sonar -Pcoverage -DskipITs
+
+  - label: ":construction: Admiral validation pipeline build :maven: :docker: :rocket:"
+    key: admiral_validation_pipeline
+    if: build.branch != pipeline.default_branch && build.env("TWILIO_PIPELINE") =~ /pr-validation/
+    plugins:
+      - ssh://git@code.hq.twilio.com/twilio/maven-buildkite-plugin.git#${TWILIO_MAVEN_PLUGIN_VERSION}:
+          release: false # don't do release build even though RELEASE_VERSION env is set by Admiral Pipeline
+          maven_args: -T 1C -U clean package -DskipTests -DskipITs
+      - ssh://git@code.hq.twilio.com/twilio/docker-buildkite-plugin.git#${TWILIO_DOCKER_PLUGIN_VERSION}:
+          action: build_and_publish
+
+  - label: ":package: Release build :maven: :sonarqube: :docker:"
+    if: build.branch == pipeline.default_branch && build.env("RELEASE_VERSION") != null
+    key: release_build
+    plugins:
+      - ssh://git@code.hq.twilio.com/twilio/maven-buildkite-plugin.git#${TWILIO_MAVEN_PLUGIN_VERSION}:
+          maven_args: -T 1C -U clean deploy sonar:sonar -Pcoverage -DskipITs -DdeployAtEnd=true
+      - ssh://git@code.hq.twilio.com/twilio/docker-buildkite-plugin.git#${TWILIO_DOCKER_PLUGIN_VERSION}:
+          action: build_and_publish
+          platforms:
+            - linux/amd64
+            - linux/arm64
+      - ssh://git@code.hq.twilio.com/twilio/bump-version-buildkite-plugin.git#${TWILIO_BUMP_VERSION_PLUGIN_VERSION}:
+          action: push
+    concurrency: 1
+    concurrency_group: ${BUILDKITE_PIPELINE_NAME}-release

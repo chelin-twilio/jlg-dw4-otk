@@ -1,0 +1,61 @@
+env:
+  TWILIO_MAVEN_PLUGIN_VERSION: main
+
+steps:
+  - label: ":toolbox: Build and deploy maven artifacts :maven: :junit: :sonarqube: :rocket:"
+    key: manual_maven_deploy
+    if: build.source == "ui" && build.env("RELEASE_VERSION") == null
+    plugins:
+      - ssh://git@code.hq.twilio.com/twilio/maven-buildkite-plugin.git#${TWILIO_MAVEN_PLUGIN_VERSION}:
+          maven_args: -T 1C clean deploy sonar:sonar -Pcoverage -DskipITs
+      - artifacts#v1.9.0:
+          upload:
+            - "jlg-dw4-otk-server/target/jlg-dw4-otk-server.jar"
+  - label: ":test_tube: Pull-request validation build :maven: :junit: :sonarqube:"
+    key: pr_validation
+    plugins:
+      - ssh://git@code.hq.twilio.com/twilio/maven-buildkite-plugin.git#${TWILIO_MAVEN_PLUGIN_VERSION}:
+          maven_args: -T 1C clean verify sonar:sonar -Pcoverage -DskipITs
+      - artifacts#v1.9.0:
+          upload:
+            - "jlg-dw4-otk-server/target/jlg-dw4-otk-server.jar"
+  - label: ":docker: build"
+    key: docker-build
+    command: docker buildx build -t jlg-dw4-otk --platform linux/amd64,linux/arm64 --file Dockerfile .
+    depends_on:
+      - manual_maven_deploy
+      - pr_validation
+    plugins:
+      - artifacts#v1.9.0:
+          download:
+            - "jlg-dw4-otk-server/target/jlg-dw4-otk-server.jar"
+      - twilio-internal/container-registry#v1.2.1:
+          image:
+            docker: jlg-dw4-otk
+  - label: "Render deployment manifest for dev"
+    key: deploy-dev
+    depends_on: docker-build
+    agents:
+      queue: otk-manifest-renderer
+    plugins:
+      - ecr#v2.7.0:
+          login: true
+          account_ids: "018537234677"
+          region: "us-east-1"
+      - twilio-internal/render-manifests#v0.0.37:
+          auto_merge: true
+          gitops_repo: git@github.com:twilio-internal/jlg-dw4-otk-deploy.git
+          render:
+            - helm:
+                source: chart
+                destination: environments/dev/us-east-1
+                values_files:
+                  - values.yaml
+                  - values-dev.yaml
+                  - values-dev-us-east-1.yaml
+                release_name: jlg-dw4-otk
+                set_values:
+                  - key: "twilhelm.containerInfo.image.version"
+                    value: "$(buildkite-agent meta-data get container-images/v2/jlg-dw4-otk/us-east-1/tag)"
+                  - key: "twilhelm.containerInfo.image.repo"
+                    value: "$(buildkite-agent meta-data get container-images/v2/jlg-dw4-otk/us-east-1/repository)"

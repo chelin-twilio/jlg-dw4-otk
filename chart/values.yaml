@@ -1,0 +1,126 @@
+# For examples on how to use this file, please refer to the https://github.com/twilio-internal/twilio-helm-library/blob/main/twilhelm/values.yaml file.
+# a values file with the minimal required config
+#debug: true
+twilhelm:
+  twilio:
+    team: team_java-guild
+  appInfo:
+    name: jlg-dw4-otk
+    version: v0.0.1
+
+  containerInfo:
+    image:
+      repo: REPLACEME
+    livenessProbe:
+      httpGet:
+        path: healthcheck
+        #TODO: Fetch port
+        port: 9876
+        scheme: HTTP
+      periodSeconds: 10
+      initialDelaySeconds: 30
+      failureThreshold: 30
+      timeoutSeconds: 1
+    resources:
+      limits:
+        memory: "1G"
+      requests:
+        cpu: "1"
+        memory: "1G"
+    ports:
+      #TODO: should be dynamic
+      - name: "admin"
+        containerPort: 8765
+      - name: "app"
+        containerPort: 9876
+    env:
+      - name: TWILIO_ROLES
+        value: "{{.Values.twilhelm.appInfo.name}}"
+      - name: ROLE
+        value: "{{.Values.twilhelm.appInfo.name}}"
+      - name: HOST_SID
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: PLATFORM_METRICS_SERVICE_HOST
+        value: "127.0.0.1"
+      - name: PLATFORM_METRICS_SERVICE_PORT
+        value: "8125"
+      - name: SECRET_ROLLBAR_API_KEY
+        value: "/secrets/secret-rollbar-api-key"
+      - name: SECRET_DATADOG_API_KEY
+        value: "/secrets/secret-rollbar-api-key"
+      - name: SOME_OTHER_SECRET
+        value: "/secrets/some-other-secret"
+    volumeMounts:
+      - mountPath: /var/run/datadog
+        name: dsdsocket
+        readOnly: true
+      - mountPath: /secrets
+        name: volume-secrets
+        readOnly: true
+
+  podInfo:
+    annotations:
+      juno.twilio.com/migrated-from-admiral-role: jlg-dw4-otk
+    volumes:
+      - name: dsdsocket
+        hostPath:
+          path: /var/run/datadog/
+          type: Directory
+
+  serviceInfo:
+    annotations:
+      name: jlg-dw4-otk
+      namespace: jlg-dw4-otk
+    ports:
+      - name: mgmt
+        port:  9876
+        targetPort:  9876
+      - name: http
+        port: 8765
+        targetPort: 8765
+  
+  autoscalingInfo:
+    metricServer:
+      # Will scale deployments once cpu reach 40% of the requests.
+      # 
+      # Target should be set with enough buffer to accomodate worst case scenarios:
+      # - full AZ outage (ie. immediate loss of 33% of pods or ~1.5x increase in traffic)
+      # - extended AWS capacity shortage (ie. 2hrs of no autoscaling)
+      # 
+      # Calculation:
+      # Max utilization for stable traffic: 80%
+      # Target scale up utilization: 80% / max(1.5, 2) = 40%
+      triggers:
+      - type: cpu
+        metricType: Utilization
+        metadata:
+          value: "40"
+
+  envoyEgressSidecarInfo:
+    enabled: true
+    resources:
+      requests:
+        cpu: 600m
+        memory: 256M
+    abbaDownstreams:
+      - accounts-api
+
+  podDisruptionBudget:
+    enabled: false
+
+  externalSecretsInfo:
+    centralSecretsInfo:
+      volumeProjection: volume-secrets
+      namespace:  jlg-dw4-otk
+      secrets:
+      - name: "twilio-log0-primary-xml"
+        secretRef: "twilio_log0_primary_xml"
+        fileName: "twilio_log0-primary"
+      - name: "secret-rollbar-api-key"
+        secretRef: "secret-rollbar-api-key"
+      - name: "secret-datadog-api-key"
+        secretRef: "secret-datadog-api-key"
+      - name: "some-other-secret"
+        secretRef: "some-other-secret"

@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        
+  
+  <modelVersion>4.0.0</modelVersion>
+        
+  
+  <parent>
+                
+    
+    <groupId>com.twilio</groupId>
+                
+    
+    <artifactId>twilio-dropwizard4-service</artifactId>
+                
+    
+    <version>10.9.891</version>
+            
+  
+  </parent>
+        
+  
+  <groupId>com.twilio.lgj</groupId>
+        
+  
+  <artifactId>jlg-dw4-otk</artifactId>
+        
+  
+  <packaging>pom</packaging>
+        
+  
+  <name>jlg-dw4-otk</name>
+        
+  
+  <version>0.0.1-SNAPSHOT</version>
+        
+  
+  <properties>
+                
+    
+    <java.language.version>21</java.language.version>
+                
+    
+    <maven.compiler.source>${java.language.version}</maven.compiler.source>
+                
+    
+    <maven.compiler.target>${java.language.version}</maven.compiler.target>
+                
+    
+    <maven.compiler.release>${java.language.version}</maven.compiler.release>
+                
+    
+    <!-- Env vars for test config -->
+                
+    
+    <testenv.HOST_SID>HO00000000000000000000000000000000</testenv.HOST_SID>
+                
+    
+    <testenv.TWILIO_REALM>local</testenv.TWILIO_REALM>
+                
+    
+    <testenv.TWILIO_ENVIRONMENT>local</testenv.TWILIO_ENVIRONMENT>
+                
+    
+    <testenv.APP_PORT>9876</testenv.APP_PORT>
+                
+    
+    <testenv.ADMIN_PORT>8765</testenv.ADMIN_PORT>
+                
+    
+    <testenv.ROLLBAR_ENABLED>false</testenv.ROLLBAR_ENABLED>
+                
+    
+    <testenv.API_AUTH_ENABLED>true</testenv.API_AUTH_ENABLED>
+                
+    
+    <testenv.HOST_AUTH_ENABLED>false</testenv.HOST_AUTH_ENABLED>
+                
+    
+    <testenv.SECRET_ROLLBAR_API_KEY>${project.basedir}/../conf/secrets/rollbar-api-key.txt</testenv.SECRET_ROLLBAR_API_KEY>
+                
+    
+    <testenv.SECRET_DATADOG_API_KEY>${project.basedir}/../conf/secrets/datadog-api-key.txt</testenv.SECRET_DATADOG_API_KEY>
+                
+    
+    <testenv.HEALTH_CHECK_PATH>healthcheck</testenv.HEALTH_CHECK_PATH>
+                
+    
+    <testenv.SERVICE_NAME>jlg-dw4-otk</testenv.SERVICE_NAME>
+            
+  
+  </properties>
+        
+  
+  <dependencyManagement>
+                
+    
+    <dependencies>
+                        
+      
+      <dependency>
+                                
+        
+        <groupId>com.twilio</groupId>
+                                
+        
+        <artifactId>dropwizard4-bom</artifactId>
+                                
+        
+        <version>10.9.891</version>
+                                
+        
+        <type>pom</type>
+                                
+        
+        <scope>import</scope>
+                            
+      
+      </dependency>
+                        
+      
+      <dependency>
+                                
+        
+        <groupId>com.twilio</groupId>
+                                
+        
+        <artifactId>dropwizard4-chassi-dependencies</artifactId>
+                                
+        
+        <version>10.9.891</version>
+                            
+      
+      </dependency>
+                        
+      
+      <dependency>
+                                
+        
+        <groupId>com.twilio</groupId>
+                                
+        
+        <artifactId>dropwizard4-chassi-test-dependencies</artifactId>
+                                
+        
+        <version>10.9.891</version>
+                            
+      
+      </dependency>
+                        
+      
+      <dependency>
+                                
+        
+        <groupId>com.twilio</groupId>
+                                
+        
+        <artifactId>twilio-test-library</artifactId>
+                                
+        
+        <version>10.9.891</version>
+                            
+      
+      </dependency>
+                        
+      
+      <dependency>
+                                
+        
+        <groupId>com.twilio.lgj</groupId>
+                                
+        
+        <artifactId>jlg-dw4-otk-server</artifactId>
+                                
+        
+        <version>0.0.1-SNAPSHOT</version>
+                            
+      
+      </dependency>
+                        
+      
+      <dependency>
+                                
+        
+        <groupId>com.twilio.lgj</groupId>
+                                
+        
+        <artifactId>jlg-dw4-otk-server</artifactId>
+                                
+        
+        <version>0.0.1-SNAPSHOT</version>
+                                
+        
+        <type>test-jar</type>
+                            
+      
+      </dependency>
+                    
+    
+    </dependencies>
+            
+  
+  </dependencyManagement>
+        
+  
+  <repositories>
+                
+    
+    <repository>
+                        
+      
+      <releases>
+            </releases>
+                        
+      
+      <snapshots>
+            </snapshots>
+                        
+      
+      <id>twilio.nexus</id>
+                        
+      
+      <url>https://nexus.corp.twilio.com/content/groups/public</url>
+                    
+    
+    </repository>
+            
+  
+  </repositories>
+        
+  
+  <pluginRepositories>
+                
+    
+    <pluginRepository>
+                        
+      
+      <releases/>
+                        
+      
+      <snapshots/>
+                        
+      
+      <id>twilio.nexus</id>
+                        
+      
+      <url>https://nexus.corp.twilio.com/content/groups/public</url>
+                    
+    
+    </pluginRepository>
+            
+  
+  </pluginRepositories>
+        
+  
+  <build>
+                
+    
+    <resources>
+                        
+      
+      <resource>
+                                
+        
+        <filtering>true</filtering>
+                                
+        
+        <directory>src/main/resources</directory>
+                                
+        
+        <includes>
+                                        
+          
+          <include>*.txt</include>
+                                        
+          
+          <include>openapi/*.yaml</include>
+                                    
+        
+        </includes>
+                            
+      
+      </resource>
+                        
+      
+      <resource>
+                                
+        
+        <filtering>true</filtering>
+                                
+        
+        <directory>src/main/java</directory>
+                                
+        
+        <includes>
+                                        
+          
+          <include>**/*.properties</include>
+                                    
+        
+        </includes>
+                            
+      
+      </resource>
+                    
+    
+    </resources>
+                
+    
+    <plugins>
+                        
+      
+      <plugin>
+                                
+        
+        <groupId>org.apache.maven.plugins</groupId>
+                                
+        
+        <artifactId>maven-dependency-plugin</artifactId>
+                            
+      
+      </plugin>
+                        
+      
+      <plugin>
+                                
+        
+        <groupId>org.apache.maven.plugins</groupId>
+                                
+        
+        <artifactId>maven-compiler-plugin</artifactId>
+                            
+      
+      </plugin>
+                        
+      
+      <plugin>
+                                
+        
+        <groupId>com.diffplug.spotless</groupId>
+                                
+        
+        <artifactId>spotless-maven-plugin</artifactId>
+                                
+        
+        <configuration>
+                                        
+          
+          <formats>
+                                                
+            
+            <format>
+                                                        
+              
+              <includes>
+                                                                
+                
+                <include>*.md</include>
+                                                                
+                
+                <include>*.yaml</include>
+                                                                
+                
+                <include>.gitignore</include>
+                                                            
+              
+              </includes>
+                                                        
+              
+              <trimTrailingWhitespace/>
+                                                        
+              
+              <endWithNewline/>
+                                                        
+              
+              <indent>
+                                                                
+                
+                <spaces>true</spaces>
+                                                                
+                
+                <spacesPerTab>4</spacesPerTab>
+                                                            
+              
+              </indent>
+                                                    
+            
+            </format>
+                                            
+          
+          </formats>
+                                        
+          
+          <java>
+                                                
+            
+            <removeUnusedImports/>
+                                                
+            
+            <googleJavaFormat>
+                                                        
+              
+              <style>GOOGLE</style>
+                                                        
+              
+              <reflowLongStrings>true</reflowLongStrings>
+                                                    
+            
+            </googleJavaFormat>
+                                            
+          
+          </java>
+                                    
+        
+        </configuration>
+                                
+        
+        <executions>
+                                        
+          
+          <execution>
+                                                
+            
+            <goals>
+                                                        
+              
+              <goal>apply</goal>
+                                                    
+            
+            </goals>
+                                                
+            
+            <phase>compile</phase>
+                                            
+          
+          </execution>
+                                    
+        
+        </executions>
+                            
+      
+      </plugin>
+                    
+    
+    </plugins>
+            
+  
+  </build>
+    
+  
+  <modules>
+          
+    
+    <module>jlg-dw4-otk-server</module>
+          
+    
+    <module>jlg-dw4-otk-integration-tests</module>
+      
+  </modules>
+  
+</project>

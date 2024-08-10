@@ -1,0 +1,28 @@
+schema:
+  description: The configuration schema for Dw4Otk
+  properties:
+    app_port:
+      description: Dropwizard application port
+      type: integer
+    admin_port:
+      description: Dropwizard admin port
+      type: integer
+    rollbar_enabled:
+      description: Enable rollbar
+      type: boolean
+      default: true
+    api_auth_enabled:
+      description: Whether or not to enable ApiAuth annotations for resource endpoints
+      type: boolean
+      default: true
+    host_auth_enabled:
+      description: Whether or not to enable HostAuth annotations for resource endpoints
+      type: boolean
+      default: true
+
+  required:
+   - app_port
+   - admin_port
+   - rollbar_enabled
+   - api_auth_enabled
+   - host_auth_enabled

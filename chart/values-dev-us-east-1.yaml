@@ -1,0 +1,8 @@
+twilhelm:
+  twilio:
+    region: us-east-1
+
+  containerInfo:
+    envOverrides:
+      - name: EXAMPLE_VAR_FOR_DEV_US_EAST_1
+        value: "this-is-dev-us-east-1"

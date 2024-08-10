@@ -1,0 +1,18 @@
+clientName: integration-test-client
+clientVersion: 1.0
+metricsPrefix: my-service
+hostSid: HOdeadbeefdeadbeefdeadbeefdeadbeef
+circuitBreakerProperties:
+  failuresBeforeReject: 200
+  successesBeforeAllow: 5
+  timeBeforeNextCheck: 20
+connectionProperties:
+  requestTimeoutInMs: 30000
+endpoints:
+  create_message:
+    circuitBreakerProperties:
+      failuresBeforeReject: 20
+      successesBeforeAllow: 5
+      timeBeforeNextCheck: 20
+    connectionProperties:
+      requestTimeoutInMs: 4000

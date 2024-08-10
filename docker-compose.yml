@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+   jlg-dw4-otk:
+    network_mode: bridge
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9876"
+      - "8765"
+    environment:
+      - APP_PORT=9876
+      - ADMIN_PORT=8765
+      - TWILIO_REALM=local
+      - TWILIO_ENVIRONMENT=local
+      - HOST_SID=HOdeadbeefdeadbeefdeadbeefdeadbeef
+      - ROLLBAR_ENABLED=false
+      - API_AUTH_ENABLED=true
+      - HOST_AUTH_ENABLED=false
+      - SECRET_ROLLBAR_API_KEY=/secrets/rollbar-api-key.txt
+      - SECRET_DATADOG_API_KEY=/secrets/datadog-api-key.txt
+      - DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+    volumes:
+      - ./conf/secrets:/secrets
+      - ./conf/service.yaml:/service/conf/service.yaml
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 512M

@@ -1,0 +1,14 @@
+twilhelm:
+  twilio:
+    environment: dev
+  
+  serviceAccountInfo:
+    # accountId: "123456789012" #ensure this is quoted or it will end up being converted to scientific notation
+    iamRoleName: "jlg-dw4-otk"
+    # Recommended to use the whole ARN here instead of accountId + iamRoleName
+    iamRoleArn: "arn:aws:iam::123456789012:role/jlg-dw4-otk"
+
+  containerInfo:
+    envOverrides:
+      - name: EXAMPLE_VAR_FOR_DEV
+        value: "this-is-dev"
